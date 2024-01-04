@@ -21,4 +21,4 @@ halo.analyze(name = "example_simulation_directory", a = 0.001, b = 30, n = 100, 
 <br>
 Example on-the-fly output includes the central density, halo energy, scattering rate as a fraction of the expected rate, velocity dispersion as well as the density profile of the halo:<br>
 
-![Unknown-24](https://github.com/ipalubski/GISHA/assets/46392921/0a7fe08f-e48f-4d75-927c-6f35810eca3d)
+![Unknown-24](https://github.com/ipalubski/GISHA/assets/46392921/0fd6af80-7118-4aa0-b344-5c966303397f)
