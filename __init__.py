@@ -1,1 +1,1 @@
-from .analysis import isoha
+from .analysis import gisha

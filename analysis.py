@@ -17,7 +17,7 @@ import warnings
 from IPython.display import clear_output
 warnings.filterwarnings('ignore')
 
-class isoha():
+class gisha():
     
     def __init__(self, Strip=False, CalcVel=True, Geth = True, DMRho = True, DMN = True, NSItable = True, Potential = True, DMRCM = False, M1 = False, M2 = True, M3 = False, Plot = True, write = True, e = 1000):
         self.Strip = Strip #remove particles outside some radius
@@ -78,9 +78,6 @@ class isoha():
         time_j: int = 0
         Nr: float = 0
         Nrc: float = 0
-        #NSIp: float = 0
-        #NSIcp: float = 0
-        #Eth: float = 0
         corefit: float = 0
         denfit: float = 0
         energy: float = 0
@@ -276,8 +273,8 @@ class isoha():
             #print("{0}s for this snap".format(end - start))
             clear_output(wait=True)
             if self.Plot:
-                if (i == 0):
-                    fig, ax = plt.subplots(5,1,figsize=(6,12))
+                #if (i == 0):
+                    #fig, ax = plt.subplots(5,1,figsize=(6,12))
                 self.plot(fig,ax,gt,results,bin_values,t,i,pars)
             if self.write:
                 if (i == int((self.e - 1))): #If on last snapshot
@@ -814,7 +811,6 @@ class isoha():
                         comments='')
 
     def plot(self,fig,ax,gt,results,bin_values,t,i,pars):
-        fig, ax = plt.subplots(5,1,figsize=(6,12))
         def get_t0(sigmam_0,rhos,rs,w):
             G = 4.3*10**(-6) 
             v0 = np.sqrt(4*np.pi*G*rhos*rs**2) # km/s
@@ -822,21 +818,42 @@ class isoha():
 
             t_c0 = (1/(a*(rhos*ut.Msun/ut.kpc**3)*(v0*ut.km/ut.s)*(sigmam_0*ut.cm**2/ut.g))).to_value('Gyr')
             return t_c0
-    
+
         ts = 1/get_t0(pars.sigma,pars.rho_s,pars.rs,w=10**4)
-        #print("ts = ",ts)
+
         x = bin_values.x
-        #fig, ax = plt.subplots(5,1,figsize=(6,12)) # Central density
-        ax[0].plot(gt.t_c[0:25000],gt.rho_c[0:25000],color='gray')
+
+        density = np.zeros(pars.number_of_snaps)
+        density_est = np.zeros(pars.number_of_snaps)
+        energy = np.zeros(pars.number_of_snaps)
+        dispersion = np.zeros(pars.number_of_snaps)
+        rate = np.zeros(pars.number_of_snaps)
+
+        for k in range(i): #loop over each snapshot so far
+            density[k] = results[k].denfit
+            density_est[k] = results[k].rho_c_est
+            energy[k] = results[k].energy
+            dispersion = results[k].vc0
+            rate[k] = results[k].Nr
+
+        fig, ax = plt.subplots(5,1,figsize=(6,12))
+        ax[0].plot(gt.t_c[0:25000],gt.rho_c[0:25000],color='gray') # Central density
         if self.DMRho:
-            ax[0].scatter(t[i]*ts,results[i].rho_c_est/pars.rho_s,color="red",s=5)
-        ax[0].scatter(t[i]*ts,results[i].denfit/pars.rho_s,color="blue",s=5)
+            #ax[0].scatter(t[i]*ts,results[i].rho_c_est/pars.rho_s,color="red",s=5)
+        #ax[0].scatter(t[i]*ts,results[i].denfit/pars.rho_s,color="blue",s=5)
+            ax[0].scatter(t[0:i+1]*ts,density_est[0:i+1]/pars.rho_s,color="red",s=5)
+        ax[0].scatter(t[0:i+1]*ts,density[0:i+1]/pars.rho_s,color="blue",s=5)
 
         ax[0].set_yscale("log")
         ax[0].set_ylim(1,1000)
+        ax[0].set_ylabel("$\rho / \rho_s$")
+        ax[0].set_xlabel("$t / t_0$")
         
-        #ax[1].plot(denfit[0:i+1])/rho_s,energy[0:i+1]/energy[0])
-        ax[1].scatter(t[i]*ts,results[i].energy/results[0].energy,s=5)
+        #ax[1].plot(density[0:i+1])/rho_s,energy[0:i+1]/energy[0])
+        ax[1].scatter(t[0:i+1]*ts,energy[0:i+1]/energy[0],s=5)
+        ax[1].set_ylabel("$E / E_0$")
+        ax[1].set_xlabel("$t / t_0$")
+
         #ax[1].set_ylim(0,10**9)
         prof_from_fit = self.fit_func(x,results[i].denfit,results[i].corefit)
         den0 = bin_values.density[np.nonzero(bin_values.density)]
@@ -847,11 +864,19 @@ class isoha():
         ax[2].set_ylim(1e4,5e10)
         ax[2].set_yscale("log")
         ax[2].set_xscale("log")
-        ax[3].scatter(t[i]*ts,results[i].vc0/pars.vmax/np.sqrt(3),color='red',s=5)
+        ax[2].set_ylabel("$\rho (M_{\odot}/kpc^3)$")
+        ax[2].set_xlabel("$r$ (kpc)")
+
+        ax[3].scatter(t[0:i+1]*ts,dispersion[0:i+1]/pars.vmax/np.sqrt(3),color='red',s=5)
         ax[3].set_xlim(0,500)
-        
-        ax[4].scatter(t[i]*ts,results[i].Nr,color='red',s=5)
+        ax[3].set_ylabel("$v_{c,0}$")
+        ax[3].set_xlabel("$t / t_0$")
+
+        ax[4].scatter(t[0:i+1]*ts,rate[0:i+1],color='red',s=5)
         ax[4].set_xlim(0,500)
+        ax[4].set_ylabel("$N_{SI}/N_{exp}$")
+        ax[4].set_xlabel("$t / t_0$")
+
         plt.show()
         fig.canvas.draw()
         fig.canvas.flush_events()
