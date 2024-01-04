@@ -275,7 +275,7 @@ class gisha():
             if self.Plot:
                 #if (i == 0):
                     #fig, ax = plt.subplots(5,1,figsize=(6,12))
-                self.plot(fig,ax,gt,results,bin_values,t,i,pars)
+                self.plot(gt,results,bin_values,t,i,pars)
             if self.write:
                 if (i == int((self.e - 1))): #If on last snapshot
                     self.write_results(pars,results,bin_values)
@@ -810,7 +810,7 @@ class gisha():
                         #header="Energy\t",
                         comments='')
 
-    def plot(self,fig,ax,gt,results,bin_values,t,i,pars):
+    def plot(self,gt,results,bin_values,t,i,pars):
         def get_t0(sigmam_0,rhos,rs,w):
             G = 4.3*10**(-6) 
             v0 = np.sqrt(4*np.pi*G*rhos*rs**2) # km/s
@@ -833,51 +833,52 @@ class gisha():
             density[k] = results[k].denfit
             density_est[k] = results[k].rho_c_est
             energy[k] = results[k].energy
-            dispersion = results[k].vc0
+            dispersion[k] = results[k].vc0
             rate[k] = results[k].Nr
 
-        fig, ax = plt.subplots(5,1,figsize=(6,12))
+        fig, ax = plt.subplots(5,1,figsize=(6,14))
+        fig.tight_layout()
         ax[0].plot(gt.t_c[0:25000],gt.rho_c[0:25000],color='gray') # Central density
         if self.DMRho:
             #ax[0].scatter(t[i]*ts,results[i].rho_c_est/pars.rho_s,color="red",s=5)
         #ax[0].scatter(t[i]*ts,results[i].denfit/pars.rho_s,color="blue",s=5)
-            ax[0].scatter(t[0:i+1]*ts,density_est[0:i+1]/pars.rho_s,color="red",s=5)
-        ax[0].scatter(t[0:i+1]*ts,density[0:i+1]/pars.rho_s,color="blue",s=5)
+            ax[0].plot(t[0:i]*ts,density_est[0:i]/pars.rho_s,color="red")
+        ax[0].plot(t[0:i]*ts,density[0:i]/pars.rho_s,color="blue")
 
         ax[0].set_yscale("log")
         ax[0].set_ylim(1,1000)
-        ax[0].set_ylabel("$\rho / \rho_s$")
-        ax[0].set_xlabel("$t / t_0$")
+        ax[0].set_ylabel(r"$\rho / \rho_s$")
+        ax[0].set_xlabel(r"$t / t_0$")
         
         #ax[1].plot(density[0:i+1])/rho_s,energy[0:i+1]/energy[0])
-        ax[1].scatter(t[0:i+1]*ts,energy[0:i+1]/energy[0],s=5)
-        ax[1].set_ylabel("$E / E_0$")
-        ax[1].set_xlabel("$t / t_0$")
+        ax[1].plot(t[0:i]*ts,energy[0:i]/energy[0])
+        ax[1].set_ylabel(r"$E / E_0$")
+        ax[1].set_xlabel(r"$t / t_0$")
 
         #ax[1].set_ylim(0,10**9)
         prof_from_fit = self.fit_func(x,results[i].denfit,results[i].corefit)
         den0 = bin_values.density[np.nonzero(bin_values.density)]
         x0 = x[np.nonzero(bin_values.density)]
-        ax[2].plot(x0,den0,color="black")
-        ax[2].plot(x,prof_from_fit)
-        ax[2].set_xlim(0.01,27)
-        ax[2].set_ylim(1e4,5e10)
-        ax[2].set_yscale("log")
-        ax[2].set_xscale("log")
-        ax[2].set_ylabel("$\rho (M_{\odot}/kpc^3)$")
-        ax[2].set_xlabel("$r$ (kpc)")
+        ax[4].plot(x0,den0,color="black")
+        ax[4].plot(x,prof_from_fit)
+        ax[4].set_xlim(0.01,27)
+        ax[4].set_ylim(1e4,5e10)
+        ax[4].set_yscale("log")
+        ax[4].set_xscale("log")
+        ax[4].set_ylabel(r"$\rho (M_{\odot}/kpc^3)$")
+        ax[4].set_xlabel(r"$r$ (kpc)")
 
-        ax[3].scatter(t[0:i+1]*ts,dispersion[0:i+1]/pars.vmax/np.sqrt(3),color='red',s=5)
-        ax[3].set_xlim(0,500)
-        ax[3].set_ylabel("$v_{c,0}$")
-        ax[3].set_xlabel("$t / t_0$")
+        ax[3].plot(t[0:i]*ts,dispersion[0:i]/pars.vmax/np.sqrt(3),color='red')
+        #ax[3].set_xlim(0,500)
+        ax[3].set_ylabel(r"$v_{c,0}$")
+        ax[3].set_xlabel(r"$t / t_0$")
 
-        ax[4].scatter(t[0:i+1]*ts,rate[0:i+1],color='red',s=5)
-        ax[4].set_xlim(0,500)
-        ax[4].set_ylabel("$N_{SI}/N_{exp}$")
-        ax[4].set_xlabel("$t / t_0$")
+        ax[2].plot(t[0:i]*ts,rate[0:i],color='red')
+        #ax[4].set_xlim(0,500)
+        ax[2].set_ylabel(r"$N_{SI}/N_{exp}$")
+        ax[2].set_xlabel(r"$t / t_0$")
 
         plt.show()
-        fig.canvas.draw()
-        fig.canvas.flush_events()
+        #fig.canvas.draw()
+        #fig.canvas.flush_events()
         
