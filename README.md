@@ -20,4 +20,5 @@ halo = GISHA.gisha(NSItable = False, write = False) # No scattering table used f
 halo.analyze(name = "example_simulation_directory", a = 0.001, b = 30, n = 100, sigma = 10.0, w = 0, dt = 0.1, rho_s = 2.73e7, rs = 1.18)<br>
 <br>
 Example on-the-fly output includes the central density, halo energy, scattering rate as a fraction of the expected rate, velocity dispersion as well as the density profile of the halo:<br>
-![Unknown-24](https://github.com/ipalubski/ISOHA/assets/46392921/6e4b5d36-104f-4f5e-a83e-0f4f8f081710)
+
+![Unknown-24](https://github.com/ipalubski/GISHA/assets/46392921/0a7fe08f-e48f-4d75-927c-6f35810eca3d)
